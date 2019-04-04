@@ -1,0 +1,79 @@
+options:
+	prefix: &7[&c-=-&7]
+	jukeboxname: &nDJ Jukebox
+	accesspermission: jukebox.accesspermission
+	playtoall: jukebox.playtoall
+	
+on right click on a jukebox:
+	if player has permission "{@accesspermission}":
+		cancel event
+		make player execute command "/jukebox"
+		stop
+		
+command /jukebox [<text>] [<text>] [<player>]:
+	permission: {@accesspermission}
+	trigger:
+		if arg 1 is not set:
+			open chest with 4 row named "{@jukeboxname}" to player
+			wait 1 tick
+			format slot 3 of command sender with 13-disc named "&b13" with lore "&eClick to play this track!" to close then run "jukebox play 13 %player%"
+			format slot 4 of command sender with cat disc named "&bCat" with lore "&eClick to play this track!" to close then run "jukebox play cat %player%"
+			format slot 5 of command sender with blocks disc named "&bBlocks" with lore "&eClick to play this track!" to close then run "jukebox play blocks %player%"
+			
+			format slot 12 of command sender with chirp disc named "&bChirp" with lore "&eClick to play this track!" to close then run "jukebox play chirp %player%"
+			format slot 13 of command sender with far disc named "&bFar" with lore "&eClick to play this track!" to close then run "jukebox play far %player%"
+			format slot 14 of command sender with mall disc named "&bMall" with lore "&eClick to play this track!" to close then run "jukebox play mall %player%"
+			
+			format slot 21 of command sender with mellohi disc named "&bMellohi" with lore "&eClick to play this track!" to close then run "jukebox play mellohi %player%"
+			format slot 22 of command sender with stal disc named "&bStal" with lore "&eClick to play this track!" to close then run "jukebox play stal %player%"
+			format slot 23 of command sender with strad disc named "&bStrad" with lore "&eClick to play this track!" to close then run "jukebox play strad %player%"
+			
+			format slot 30 of command sender with ward disc named "&bWard" with lore "&eClick to play this track!" to close then run "jukebox play ward %player%"
+			format slot 31 of command sender with 11-disc named "&b11" with lore "&eClick to play this track!" to close then run "jukebox play 11 %player%"
+			format slot 32 of command sender with wait disc named "&bWait" with lore "&eClick to play this track!" to close then run "jukebox play wait %player%"
+			
+			if player has permission "(@playtoall}":
+				format slot 25 of command sender with gray dye named "&eToggle this to play to whole server" with lore "&cCurrently Disabled" to close then run "jukebox playtoserver bla %player%"
+				
+		if arg 1 is "playtoserver":
+			make arg 3 execute command "serverjukebox"
+			
+		if arg 1 is "playtoself":
+			make arg 3 execute command "jukebox"
+			
+			
+		if arg 1 is "play":
+			if arg 2 is "13" or "cat" or "blocks" or "chirp" or "far" or "mall" or "mellohi" or "stal" or "strad" or "ward" or "11" or "wait":
+				play raw sound "records.%arg 2%" at arg 3 with pitch 1 volume 100
+				message "&aNow Playing &7%arg 2%&a!" to arg 3
+				
+		if arg 1 is "superplay":
+			if arg 2 is "13" or "cat" or "blocks" or "chirp" or "far" or "mall" or "mellohi" or "stal" or "strad" or "ward" or "11" or "wait":
+				loop all players:
+					play raw sound "records.%arg 2%" at loop-player with pitch 1 volume 100
+					message "&aNow Playing &7%arg 2%&a!" to loop-player
+					
+command /serverjukebox:
+	permission: {@accesspermission}
+	trigger:
+		wait 2 tick
+		open chest with 4 row named "{@jukeboxname} - Server" to player
+		wait 1 tick
+		format slot 3 of command sender with 13-disc named "&b13" with lore "&eClick to play this track!" to close then run "jukebox superplay 13"
+		format slot 4 of command sender with cat disc named "&bCat" with lore "&eClick to play this track!" to close then run "jukebox superplay cat"
+		format slot 5 of command sender with blocks disc named "&bBlocks" with lore "&eClick to play this track!" to close then run "jukebox superplay blocks"
+		
+		format slot 12 of command sender with chirp disc named "&bChirp" with lore "&eClick to play this track!" to close then run "jukebox superplay chirp"
+		format slot 13 of command sender with far disc named "&bFar" with lore "&eClick to play this track!" to close then run "jukebox superplay far"
+		format slot 14 of command sender with mall disc named "&bMall" with lore "&eClick to play this track!" to close then run "jukebox superplay mall"
+		
+		format slot 21 of command sender with mellohi disc named "&bMellohi" with lore "&eClick to play this track!" to close then run "jukebox superplay mellohi"
+		format slot 22 of command sender with stal disc named "&bStal" with lore "&eClick to play this track!" to close then run "jukebox superplay stal"
+		format slot 23 of command sender with strad disc named "&bStrad" with lore "&eClick to play this track!" to close then run "jukebox superplay strad"
+		
+		format slot 30 of command sender with ward disc named "&bWard" with lore "&eClick to play this track!" to close then run "jukebox superplay ward"
+		format slot 31 of command sender with 11-disc named "&b11" with lore "&eClick to play this track!" to close then run "jukebox superplay 11"
+		format slot 32 of command sender with wait disc named "&bWait" with lore "&eClick to play this track!" to close then run "jukebox superplay wait"
+		
+		if player has permission "(@playtoall}":
+			format slot 25 of command sender with light green dye named "&eToggle this to play to whole server" with lore "&cCurrently Disabled" to run "jukebox playtoself bla %player%"
