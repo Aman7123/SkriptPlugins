@@ -1,0 +1,39 @@
+
+command /immigrate [<text>] [<text>]:
+    trigger:
+        if arg 1 is not set:
+            send "&9/immigrate request &r-&a Get the book you must fill out in order to immigrate"
+            send "&9/immigrate submit [nation]&r-&a Execute this command WHILE HOLDING THE BOOK to submit to the nation you specify"
+        if arg 1 is "help":
+            send "&9/immigrate request &r-&a Get the book you must fill out in order to immigrate"
+            send "&9/immigrate submit [nation]&r-&a Execute this command WHILE HOLDING THE BOOK to submit to the nation you specify"
+        if arg 1 is "givebook":
+            remove written book from the player's inventory
+            give player book and quill named "&aImmigration Request Draft"
+        if arg 1 is "request":
+            make console execute command "/give %player% minecraft:written_book 1 0 {author:""StormW Nations"",title:""&aImmigration Request"",pages:[""{text:\""Type the reason why you think you need/deserve a nation change! Please click the green text to get the book to type in. When you are done typing sign the book, hold it in your hand and right click in the air \\n\\n\"",color:\""gray\"",extra:[{text:\""Click here\"",bold:\""true\"",color:\""green\"",clickEvent:{action:\""run_command\"",value:\""/immigrate givebook\""}}]}""]}"
+        if arg 1 is "submit":
+            if arg 2 is not set:
+                send "&9Immigration> &aPlease specify a nation Ex. /immigration submit Canada"
+            if arg 2 is set:
+                if {nations.%arg 2%} exists:
+                    if tool of player is written book:
+                        set {_weapon} to the player's tool
+                        broadcast "%{_weapon}%"
+                        set the name of the player's tool to "&aImmigration Request"
+                        set the 1st line of {_weapon}'s lore to "&9Player: %player%"
+                        set the 2nd line of {_weapon}'s lore to "&9Current Nation: [NATION]"
+                        open the inventory of the block at {mailbox::%arg 2%} to the player
+                        delete {_weapon}
+                    if tool of player is not written book:
+                        send "&9Immigration> &aPlease hold your immigration request book"
+            if {nations.%arg 2%} does not exist:
+                send "&9Immigration> &aThat nation does not exist, try pressing [TAB] after typing /immigration submit "
+                    
+on tab completer for "/immigrate":
+    if arg 1 is "":
+        add "request" to completions
+        add "submit" to completions
+    if arg 1 is "submit":
+        add "[NATIONS HERE]" to completions
+                    

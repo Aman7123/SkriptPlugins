@@ -1,0 +1,42 @@
+on load:
+	register new shaped recipe for 1 end portal frame named "&aPlace to spawn end portal" with lore "&9When placed it will become the center of the end portal" using endereye, endereye, endereye, endereye, obsidian, endereye, endereye, endereye, endereye
+	send "&aEnd Portal recipe registered!" to console
+	register new shaped recipe for 2 wet sponges using pufferfish, slimeball, pufferfish, slimeball, pufferfish, slimeball, pufferfish, slimeball, pufferfish
+	send "&aSponge Block recipe registered!" to console
+	register new shapeless recipe for slimeball using light green dye, snowball, paper, air, air, air, air, air, air
+	send "&aSlimeball recipe registered!" to console
+	
+on place of end portal frame:
+	name of former tool is "&aPlace to spawn end portal":
+		set {_centerBlock} to target block
+		loop players in radius 6 around target block:
+			thrust loop-player backwards with speed 1
+		wait 4 ticks
+		set the block at {_centerBlock} to endportal
+		set block 1 north of {_centerBlock} to endportal
+		set block 1 south of {_centerBlock} to endportal
+		set block 1 east of {_centerBlock} to endportal
+		set block 1 west of {_centerBlock} to endportal
+		set block 1 northeast of {_centerBlock} to endportal
+		set block 1 northwest of {_centerBlock} to endportal
+		set block 1 southeast of {_centerBlock} to endportal
+		set block 1 southwest of {_centerBlock} to endportal
+		
+		set block 2 north of {_centerBlock} to end portal frame
+		set block 2 south of {_centerBlock} to end portal frame
+		set block 2 east of {_centerBlock} to end portal frame
+		set block 2 west of {_centerBlock} to end portal frame
+		
+		set {_northBlock} to block 2 north of {_centerBlock}
+		set {_southBlock} to block 2 south of {_centerBlock}
+		set {_eastBlock} to block 2 east of {_centerBlock}
+		set {_westBlock} to block 2 west of {_centerBlock}
+		
+		set block 1 east of {_northBlock} to end portal frame
+		set block 1 west of {_northBlock} to end portal frame
+		set block 1 east of {_southBlock} to end portal frame
+		set block 1 west of {_southBlock} to end portal frame
+		set block 1 north of {_eastBlock} to end portal frame
+		set block 1 south of {_eastBlock} to end portal frame
+		set block 1 north of {_westBlock} to end portal frame
+		set block 1 south of {_westBlock} to end portal frame

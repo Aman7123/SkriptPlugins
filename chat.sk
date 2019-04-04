@@ -1,0 +1,73 @@
+on chat:
+	cancel event
+	if {database.%uuid of player%.isMuted} is true:
+		if {database.%uuid of player%.muteTime} exists:
+			set {_tempban} to  difference between now and {database.%uuid of player%.whenMutted}
+			reduce {_tempban} by {database.%uuid of player%.muteTime}
+			if difference between now and {database.%uuid of player%.whenMuted} is bigger than {database.%uuid of player%.muteTime}:
+				delete {database.%uuid of player%.isMuted}
+				delete {database.%uuid of player%.whenMuted}
+				delete {database.%uuid of player%.muteTime}
+				delete {database.mutedplayers::%player%}
+				stop
+			if difference between now and {database.%uuid of player%.whenMuted} is smaller than {database.%uuid of player%.muteTime}:
+				set {_time} to difference between now and {database.%uuid of player%.whenMuted}
+				set {_time1} to {database.%uuid of player%.muteTime}
+				reduce {_time1} by {_time}
+				send "&aIm sorry but you are still muted for another &7%{_time1}%"
+				stop
+		else:
+			send json "&aYou have been muted -- appeal at " then "&7http://stormw.net/fourms" tooltip "&7Click me to open link" open "http://stormw.net/forums" to player
+			stop
+	set {_message} to "%message%"
+	replace all "&" with "§" in {_message}
+	replace all "<3" with "❤" in {_message}
+	replace all "youre" with "you're" in {_message}
+	set {_rank} to {database.%uuid of player%.serverRANK}
+	if {database.%uuid of player%.nickname} does not exist:
+		if {database.%uuid of player%.upgrades::openlink} does not exist:
+			send json "&7[%{_rank}%&7]&r %player%&r: " tooltip "&9Name: &a%player%%nl%&9Rank: &a%{_rank}%" then "%{_message}%" to all players
+		else:
+			set {_link} to {database.%uuid of player%.upgrades::openlink}
+			send json "&7[%{_rank}%&7]&r %player%&r: " tooltip "&9Name: &a%player%%nl%&9Rank: &a%{_rank}%" open "%{_link}%" then "%{_message}%" to all players
+	else:
+		if {database.%uuid of player%.upgrades::openlink} does not exist:
+			send json "&7[%{_rank}%&7] %{database.%uuid of player%.nickname}%&f: " tooltip "&9Name: &a%player%%nl%&9Rank: &a%{_rank}%" then "%{_message}%" to all players
+		else:
+			set {_link} to {database.%uuid of player%.upgrades::openlink}
+			send json "&7[%{_rank}%&7] %{database.%uuid of player%.nickname}%&f: " tooltip "&9Name: &a%player%%nl%&9Rank: &a%{_rank}%" open "%{_link}%" then "%{_message}%" to all players
+
+command /msg [<player>] [<text>]:
+	aliases: /message, /send, /hey, /m
+	description: start a private message with a player
+	trigger:
+		if arg 1 is not set:
+			send "&9Chat> &aPlease define a player"
+		if arg 1 is set:
+			if arg 2 is set:
+				send "&6[me -> %arg 1%&6]&r %arg 2%"
+				send "&6[%player%&6 -> me]&r %arg 2%" to player-argument
+				set {database.%uuid of arg 1%.replyto} to player
+				set {database.%uuid of player%.replyto} to arg 1
+				
+command /r [<text>]:
+	aliases: /reply, /respond
+	description: quick reply to your last message
+	trigger:
+		if arg 1 is set:
+			if {database.%uuid of player%.replyto} exists:
+				set {_r} to {database.%uuid of player%.replyto}
+				if {_r} is online:
+					send "&6[me -> %{_r}%&6]&r %arg 1%"
+					send "&6[%player%&6 -> me]&r %arg 1%" to {_r}
+				else:
+					send "&9Messages> &aThat player is no longer online"
+			if {database.%uuid of player%.replyto} does not exist:
+				send "&9Messages> &aYou have no one to reply to!"
+		else:
+			send "&9Messages> &aYou need to include a message"
+on join:
+	delete {database.%uuid of player%.replyto}
+	
+on quit:
+	delete {database.%uuid of player%.replyto}

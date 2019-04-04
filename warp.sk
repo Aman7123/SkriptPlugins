@@ -1,0 +1,62 @@
+command /setwarp <text>:
+	permission: skript.admin
+	trigger:
+		if player is op:
+			if arg 1 is set:
+				if {warps::%arg 1%} exists:
+					send "9Warps> &a""%arg 1%"" already exists"
+				if {warps::%arg 1%} does not exist:
+					set {warps::%arg 1%} to location of player
+					add arg 1 to {warps::*}
+					send "&9Warps> &aWarp ""%arg 1%"" set to your location"
+			if arg 1 is not set:
+				send "&9Warps> &aYou need to name the warp"
+      
+command /warp <text>:
+	trigger:
+		if arg 1 is set:
+			if {warps::%arg 1%} exists:
+				if player is riding:
+					set {_Mount} to vehicle of player
+					make the player dismount vehicle
+					wait 3 ticks
+					teleport player to {warps::%arg 1%}
+					teleport {_Mount} to {warps::%arg 1%}
+					make the player ride {_Mount}
+				else:
+					teleport the player to {warps::%arg 1%}
+			if {warps::%arg 1%} does not exist:
+				send "&9Warps> &aI'm sorry but that isn't a warp, contact an admin if you think this is a mistake!"
+		if arg 1 is not set:
+			send "&9Warps> &aYou need to define what warp you want to go to, try pressing [TAB] after typeing /warp "
+				
+command /delwarp <text>:
+	permission: skript.admin
+	trigger:
+		if player is op:
+			if arg 1 is set:
+				if {warps::%arg 1%} exists:
+					send "&9Warps> &a""%arg 1%"" has been successfully removed"
+				if {warps::%arg 1%} does not exist:
+					send "&9Warps> &aTheir is no warp by the name ""%arg 1%"""
+			if arg 1 is not set:
+				send "&9Warps> &aYou need to define a warp"
+            
+command /warplist:
+	permission: skript.admin
+	trigger:
+		set {_warpcount} to size of {warps::*}
+		send "&9Warps (%{_warpcount}%)> &a%{warps::*}%"
+		delete {_warpcount}
+            
+command /spawn:
+	trigger:
+		if player is riding:
+			set {_Mount} to vehicle of player
+			make the player dismount vehicle
+			wait 3 ticks
+			teleport player to {warps::spawn}
+			teleport {_Mount} to {warps::spawn}
+			make the player ride {_Mount}
+		else:
+			teleport the player to {warps::spawn}

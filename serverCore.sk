@@ -1,0 +1,64 @@
+on connect:
+	if uuid of player is not {database.%uuid of player%.UUID}:
+		kick player due to "&aThis server does not fully support UUID changes yet!%nl%Head on over to www.stormw.net and tell us we should!"
+		log "%player% joined with UUID %uuid of player%" to "Attempted_Hijackers.log"
+		
+	if player is "Aaron_Renner" or "LoveMyKittyKats" or "Si1entB1ade" or "BRS1210":
+		stop
+	if {ServerMode.Closed} is true:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			stop
+		if {_rank} is "§bCitizen":
+			kick player due to "&cTher server is closed for maintenance%nl%please view www.stormw.net for more info"
+		else:
+			kick player due to "&cTher server is closed for maintenance%nl%please view www.stormw.net for more info"
+on join:
+	wait 1 tick
+	set {_rank} to {database.%uuid of player%.serverRANK}
+	if {_rank} is "§aMod" or "§cAdmin":
+		send json "&f[&aMod Change Log(hover)&f]: &aAdded " then "&c/mute" then "&f, " then "&c/unmute" then "&f, " then "&c/mutelist" to player
+		send json "&f[&aChange Log(hover)&f]: &aAdded " then "&c/r" tooltip "&aReply to the last person%nl%&awho messaged you" then " &aand " then "&c/changelog" tooltip "&aView past changes to server" to player
+	else:
+		send json "&f[&aChange Log(hover)&f]: &aAdded " then "&c/r" tooltip "&aReply to the last person%nl%&awho messaged you" then " &aand " then "&c/changelog" tooltip "&aView past changes to server" to player
+	
+command /changelog:
+	trigger:
+		send json "&f[&a4/20&f]: &aAdded " then "&c/fixgm" tooltip "&aFixes your gamemode%nl%&aso you can break blocks" then " &aand " then "&c/unstick" tooltip "&aUnsticks you from a block" to player
+		send json "&f[&a4/29 (mod)&f]: &aAdded " then "&c/mute" then "&f, " then "&c/unmute" then "&f, " then "&c/mutelist" to player
+		send json "&f[&a4/29&f]: &aAdded " then "&c/r" tooltip "&aReply to the last person%nl%&awho messaged you" then " &aand " then "&c/changelog" tooltip "&aView past changes to server" to player
+		
+on ping:
+	if {ServerMode.Closed} is true:
+		set motd to "&aStormW Nations >>&c Server Closed for Maintenance"
+		stop
+	if {ServerMode.Open} is true:
+		set motd to "&aStormW Nations >>&9 www.stormw.net%nl%&6Check out the new forums at stormw.net"
+		stop
+	else:
+		set motd to "&aStormW Nations >>&9 www.stormw.net%nl%&6Check out the new forums at stormw.net"
+		
+command /servermode [<text>]:
+	permission: skript.admin
+	trigger:
+		if arg 1 is not set:
+			send "&6-- Server Modes --"
+			send "&9/servermode closed &a- disallows players from joining server"
+			send "&9/servermode open &a- allows player to join server"
+			send "&9/servermode reset &a- resets everything"
+		if arg 1 is "closed" or "close":
+			set {ServerMode.Closed} to true
+			set {ServerMode.Open} to false
+			send "&9Server> &aYou closed the server"
+		if arg 1 is "open":
+			set {ServerMode.Open} to true
+			set {ServerMode.Closed} to false
+			send "&9Server> &aYou opened the server"
+		if arg 1 is "reset":
+			delete {ServerMode.Open}
+			delete {ServerMode.Closed}
+			send "&9Server> &aYou reset the server"
+			
+every 10 minutes:
+	make console execute command "/save-all"
+	broadcast "&9Server> &aSaved World"

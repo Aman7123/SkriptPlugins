@@ -1,0 +1,149 @@
+command /upgrades:
+	aliases: /upgrade
+	description: Add some special things to your player
+	trigger:
+		if player is op:
+			open chest with 6 row named "Player Upgrades" to player
+			wait 1 tick	
+			if {database.%uuid of player%.upgrades::nickname} exists:
+				format slot 32 of player with anvil named "&aHave a Nickname" with lore "&bBuy the ability to set a nickname||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::nickname} does not exist:
+				format slot 32 of player with anvil named "&aHave a Nickname" with lore "&bBuy the ability to set a nickname" to close then run "playerupgrade nickname %player%"
+				
+			if {database.%uuid of player%.upgrades::morehomes} exists:
+				format slot 10 of player with bed named "&aMore Homes" with lore "&bAdility to add more then 3 homes||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::morehomes} does not exist:
+				format slot 10 of player with bed named "&aMore Homes" with lore "&bAdility to add more then 3 homes" to close then run "playerupgrade morehomes %player%"
+				
+			if {database.%uuid of player%.upgrades::tpparticles} exists:
+				format slot 12 of player with glowstone dust named "&aTeleport particles" with lore "&bPlays a nice particle when you teleport somewhere||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::tpparticles} does not exist:
+				format slot 12 of player with glowstone dust named "&aTeleport particles" with lore "&bPlays a nice particle when you teleport somewhere" to close then run "playerupgrade teleportparticles %player%"
+				
+			if {database.%uuid of player%.upgrades::doubleenderchest} exists:
+				format slot 14 of player with ender chest named "&aDouble Ender Chest" with lore "&c--In Development--" to close
+			if {database.%uuid of player%.upgrades::doubleenderchest} does not exist:
+				format slot 14 of player with ender chest named "&aDouble Ender Chest" with lore "&c--In Development--" to close
+				
+			if {database.%uuid of player%.upgrades::joinfirework} exists:
+				format slot 16 of player with firework rocket named "&aJoin Firework" with lore "&bLaunch a cool firework when you join||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::joinfirework} does not exist:
+				format slot 16 of player with firework rocket named "&aJoin Firework" with lore "&bLaunch a cool firework when you join" to close then run "playerupgrade joinfirework %player%"
+				
+			if {database.%uuid of player%.upgrades::autosmelt} exists:
+				format slot 28 of player with unlit furnace named "&aAuto Smelt Enchantment" with lore "&c--In Development--" to close
+			if {database.%uuid of player%.upgrades::autosmelt} does not exist:
+				format slot 28 of player with unlit furnace named "&aAuto Smelt Enchantment" with lore "&c--In Development--" to close
+			
+			if {database.%uuid of player%.upgrades::workbench} exists:
+				format slot 30 of player with crafting table named "&a/workbench command" with lore "&bAccess a crafting table anywhere||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::workbench} does not exist:
+				format slot 30 of player with crafting table named "&a/workbench command" with lore "&bAccess a crafting table anywhere" to close then run "playerupgrade workbench %player%"
+				
+			if {database.%uuid of player%.upgrades::nickname} exists:
+				format slot 32 of player with name tag named "&aHave a Nickname" with lore "&bBuy the ability to set a nickname||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::nickname} does not exist:
+				format slot 32 of player with name tag named "&aHave a Nickname" with lore "&bBuy the ability to set a nickname" to close then run "playerupgrade nickname %player%"
+				
+			if {database.%uuid of player%.upgrades::spawnertype} exists:
+				format slot 34 of player with mob spawner named "&a/spawner command" with lore "&bChange a mob spawners type||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::spawnertype} does not exist:
+				format slot 34 of player with mob spawner named "&a/spawner command" with lore "&bChange a mob spawners type" to close then run "playerupgrade spawnertype %player%"		
+
+			if {database.%uuid of player%.upgrades::openlink} exists:
+				format slot 48 of player with anvil named "&aOpen Link" with lore "&bWhen your name is click in chat it||&bIt will open the clickers web browser to this page||&cYou already own this" to close
+			if {database.%uuid of player%.upgrades::openlink} does not exist:
+				format slot 48 of player with anvil named "&aOpen Link" with lore "&bWhen your name is click in chat it||&bIt will open the clickers web browser to this page||&bUse the command /examplelink to see an example" to close then run "playerupgrade openlink %player%"
+		else:
+			send "&9Shop> &aThis command is currently in progress -- ##ExpectNewThings or ##BlameAaron"
+			
+command /playerupgrade <text> <player>:
+	description: Handles the buying of upgrades
+	permission: skript.superadmin
+	trigger:
+		set {_money} to {database.%uuid of arg 2%.MONEY} parsed as a number
+		if arg 1 is "morehomes":
+			if {_money} < 2500:
+				send "&9Shops> &aYou do not have enough money to buy this - you need $2500" to player-argument
+				play raw sound "note.bass" at player-argument with pitch 50 volume 4
+			if {_money} >= 2500:
+				remove 250 from {database.%uuid of arg 2%.MONEY}
+				set {database.%uuid of arg 2%.upgrades::morehomes} to true
+				play raw sound "note.pling" at player-argument with pitch 2 volume 4
+				send "9Shop> &aCongrats you bought more homes!" to player-argument
+				
+		if arg 1 is "teleportparticles":
+			if {_money} < 250:
+				send "&9Shops> &aYou do not have enough money to buy this - you need $250" to player-argument
+				play raw sound "note.bass" at player-argument with pitch 50 volume 4
+			if {_money} >= 250:
+				remove 250 from {database.%uuid of arg 2%.MONEY}
+				set {database.%uuid of arg 2%.upgrades::tpparticles} to true
+				play raw sound "note.pling" at player-argument with pitch 2 volume 4
+				send "9Shop> &aCongrats you bought teleport particles - edit your particles by clicking item again in the ""/upgrades"" menu!" to player-argument
+				
+				
+		if arg 1 is "doubleenderchest":
+			if {_money} < 1000:
+				send "&9Shops> &aYou do not have enough money to buy this - you need $1000" to player-argument
+				play raw sound "note.bass" at player-argument with pitch 50 volume 4
+			if {_money} >= 1000:
+				remove 1000 from {database.%uuid of arg 2%.MONEY}
+				set {database.%uuid of arg 2%.upgrades::doubleenderchest} to true
+				set {database.b4734781-71db-41ed-9cd2-9fcadfaf5abf.mail::%arg 2%} to "%uuid of arg 2% - %arg 2% needs an enderchest!"
+				play raw sound "note.pling" at player-argument with pitch 2 volume 4
+				send "9Shop> &aCongrats you bought arrow particles - edit your particles by clicking item again in the ""/upgrades"" menu!" to player-argument
+				
+		if arg 1 is "joinfirework":
+			if {_money} < 250:
+				send "&9Shops> &aYou do not have enough money to buy this - you need $250" to player-argument
+				play raw sound "note.bass" at player-argument with pitch 50 volume 4
+			if {_money} >= 250:
+				remove 250 from {database.%uuid of arg 2%.MONEY}
+				set {database.%uuid of arg 2%.upgrades::joinfirework} to true
+				play raw sound "note.pling" at player-argument with pitch 2 volume 4
+				send "9Shop> &aCongrats you bought join fireworks - edit your fireworks by clicking item again in the ""/upgrades"" menu!" to player-argument
+				
+		if arg 1 is "spawnertype":
+			if {_money} < 2500:
+				send "&9Shops> &aYou do not have enough money to buy this - you need $2500" to player-argument
+				play raw sound "note.bass" at player-argument with pitch 50 volume 4
+			if {_money} >= 2500:
+				remove 250 from {database.%uuid of arg 2%.MONEY}
+				set {database.%uuid of arg 2%.upgrades::spawnertype} to true
+				play raw sound "note.pling" at player-argument with pitch 2 volume 4
+				send "9Shop> &aCongrats you bought /spawner command" to player-argument
+				
+		if arg 1 is "nickname":
+			if {_money} < 2500:
+				send "&9Shops> &aYou do not have enough money to buy this - you need $2500" to player-argument
+				play raw sound "note.bass" at player-argument with pitch 250 volume 4
+			if {_money} >= 2500:
+				remove 250 from {database.%uuid of arg 2%.MONEY}
+				set {database.%uuid of arg 2%.upgrades::nickname} to true
+				play raw sound "note.pling" at player-argument with pitch 2 volume 4
+				send "9Shop> &aCongrats you bought /nickname command" to player-argument
+		
+command /bal [<player>]:
+	aliases: /money
+	description: See your or another players balances
+	trigger:
+		if arg 1 is set:
+			if player has permission "skript.bal.others":
+				send "&b%arg 1% &ahas %{database.%uuid of arg 1%.MONEY}%$"
+			else:
+				send "&9Server> &aYou do not have enough permission"
+		else:
+			send "&9Server> &aYou have %{database.%uuid of player%.MONEY}%$"
+		
+command /pay <player> <integer>:
+	description: pay a player
+	trigger:
+		remove arg 2 from {database.%uuid of player%.MONEY}
+		add arg 2 to {database.%uuid of arg 1%.MONEY}
+		send "&aYou paid &c%arg 1% &a%arg 2%$ - your balance is now %{database.%uuid of player%.MONEY}%"
+		send "&9Server> &a%player% paid you %arg 2%$ - your balance is now %{database.%uuid of arg 1%.MONEY}%" to arg 1
+		
+command /examplelink:
+	trigger:
+		send json "&aClick me to see the example!" tooltip "&aJust Click MEEEE!" open "http://example.com" to player

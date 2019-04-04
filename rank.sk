@@ -1,0 +1,53 @@
+command /rank [<player>] [<text>] [<text>]:
+	aliases: /daranks, /rankstuff, /ranks
+	permission: skript.admin
+	trigger:
+		if player is op:
+			if arg 1 is set:
+				if arg 2 is "set":
+					if arg 3 is "admin":
+						delete {database.%uuid of arg 1%.serverRANK}
+						set {database.%uuid of arg 1%.serverRANK} to "§cAdmin"
+						make console execute command "/pex user %arg 1% group set Admin"
+						send "&9Rank> &aYou set rank of %arg 1% to %arg 3%"
+						send "&9Rank> &aYou have been promoted to %{database.%uuid of arg 1%.serverRANK}%" to arg 1
+					if arg 3 is "mod":
+						delete {database.%uuid of arg 1%.serverRANK}
+						set {database.%uuid of arg 1%.serverRANK} to "§aMod"
+						make console execute command "/pex user %arg 1% group set Mod"
+						send "&9Rank> &aYou set rank of %arg 1% to %arg 3%"
+						send "&9Rank> &aYou have been promoted to %{database.%uuid of arg 1%.serverRANK}%" to arg 1
+					if arg 3 is "citizen":
+						delete {database.%uuid of arg 1%.serverRANK}
+						set {database.%uuid of arg 1%.serverRANK} to "§bCitizen"
+						make console execute command "/pex user %arg 1% group set Citizen"
+						send "&9Rank> &aYou set rank of %arg 1% to %arg 3%"
+						send "&9Rank> &aYou have been promoted to %{database.%uuid of arg 1%.serverRANK}%" to arg 1
+					if arg 3 is not "admin" or "mod" or "citizen":
+						send "&eRanks: &cAdmin&r, &bCitizen&r, &aMod"
+					if arg 3 is not set:
+						send "&eRanks: &cAdmin&r, &bCitizen&r, &aMod"
+				if arg 2 is not set:
+					send "&6--&bskRanks Commands&6--"
+					send "&eRanks: &cAdmin&r, &bCitizen&r, &aMod"
+					send "&9/rank <player> set <rank> &a- set the <player> to <rank>"
+			if arg 1 is not set:
+				send "&6--&bskRanks Commands&6--"
+				send "&eRanks: &cAdmin&r, &bCitizen&r, &aMod"
+				send "&9/rank <player> set <rank> &a- set the <player> <rank>"
+				
+on join:
+	wait 1 tick
+	if {database.%uuid of arg 1%.isLeader} is true:
+		make console execute command "/pex user %arg 1% group set Leader"
+		stop
+	if {database.%uuid of player%.serverRANK} is "§bCitizen":
+		make console execute command "/pex user %arg 1% group set Citizen"
+		stop
+	if {database.%uuid of player%.serverRANK} is "§aMod":
+		make console execute command "/pex user %arg 1% group set Mod"
+		stop
+	if {database.%uuid of player%.serverRANK} is "§aAdmin":
+		make console execute command "/pex user %arg 1% group set Admin"
+		stop
+	

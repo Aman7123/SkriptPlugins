@@ -1,0 +1,656 @@
+on first join:
+	broadcast "<red>%player% <green>has joined for the first time"
+
+on teleport:
+	delete {database.%uuid of player%.back}
+	set {database.%uuid of player%.back} to location of player
+on death:
+	delete {database.%uuid of player%.deathback}
+	set {database.%uuid of player%.deathback} to location of player
+
+command /back:
+	description: Takes you back to a death point or previous TP point
+	trigger:
+		set {_wait} to difference between {database.%uuid of player%.backcooldown} and now
+		if {database.%uuid of player%.backcooldown} does not exist:
+			set {database.%uuid of player%.backcooldown} to now
+			teleport the player to {database.%uuid of player%.back}
+			stop
+		if {database.%uuid of player%.deathback} exists:
+			teleport the player to {database.%uuid of player%.deathback}
+			delete {database.%uuid of player%.deathback}
+			stop
+		if {_wait} is greater than or equal to 5 minutes:
+			teleport the player to {database.%uuid of player%.back}
+			set {database.%uuid of player%.backcooldown} to now
+			stop
+		if {_wait} is less than 5 minutes:
+			send "&9Server> &aYou can only use that command every 5 min - you have to wait &c%{_wait}%"
+		else:
+			send "&9Teleport> &aYou have no where to teleport to"
+			
+command /sendpos [<player>]:
+	description: Send your cords to a player
+	aliases: sendcoords,sendcompass,senddepth,sendheight
+	trigger:
+		if arg 1 is set:
+			send "&6[me -> %arg 1%&6]&r my cords are &c%player's x-coordinate% %player's y-coordinate% %player's z-coordinate%"
+			send "&6[%player%&6 -> me]&r my cords are &c%player's x-coordinate% %player's y-coordinate% %player's z-coordinate%" to player-argument
+		else:
+			send "&9Commands> &aPlease specify a player to send your cords to"
+			
+command /tpa [<player>]:
+	description: Request to TP to a player
+	trigger:
+		if arg 1 is set:
+			set {database.%uuid of arg 1%.tpa} to player
+			send "&9Teleport> &a%player% would like to teleport to you,&c use /tpyes to accept" to argument 1
+			message "&9Teleport> &aYour tpa request was sent to &c%arg 1%"
+		else:
+			send "&9Teleport> &aPlease specify a player"
+			
+command /tpahere [<player>]:
+	description: Requests a player to TP to you
+	trigger:
+		if arg 1 is set:
+			set {database.%uuid of arg 1%.tpahere} to player
+			send "&9Teleport> &a%player% would like to you to teleport to him,&c use /tpyes to accept" to argument 1
+			message "&9Teleport> &aYour tpahere request was sent to &c%arg 1%"
+		else:
+			send "&9Teleport> &aPlease specify a player"
+command /tpaccept:
+	description: Accepts a /tpahere or /tpa request
+	aliases: /tpyes, /tpsure
+	trigger:
+		if {database.%uuid of player%.tpa} exists:
+			if {database.%uuid of player%.tpa} is riding:
+				set {_Mount} to vehicle of {database.%uuid of player%.tpa}
+				make {database.%uuid of player%.tpa} dismount vehicle
+				wait 3 ticks
+				teleport {database.%uuid of player%.tpa} to location of player
+				teleport {_Mount} to location of player
+				make {database.%uuid of player%.tpa} ride {_Mount}
+				send "&9Teleport> &ateleporting..."
+				send "&9Teleport> &ateleporting..." to {database.%uuid of player%.tpa}
+				delete {database.%uuid of player%.tpa}
+				stop
+			else:
+				teleport {database.%uuid of player%.tpa} to location of player
+				send "&9Teleport> &ateleporting..."
+				send "&9Teleport> &ateleporting..." to {database.%uuid of player%.tpa}
+				delete {database.%uuid of player%.tpa}
+				stop
+		if {database.%uuid of player%.tpahere} exists:
+			if player is riding:
+				set {_Mount} to vehicle of player
+				make player dismount vehicle
+				wait 3 ticks
+				teleport player to {database.%uuid of player%.tpahere}
+				teleport {_Mount} to {database.%uuid of player%.tpahere}
+				make the player ride {_Mount}
+				send "&9Teleport> &ateleporting..."
+				send "&9Teleport> &ateleporting..." to {database.%uuid of player%.tpahere}
+				delete {database.%uuid of player%.tpahere}
+				stop
+			else:
+				teleport the player to {database.%uuid of player%.tpahere}
+				send "&9Teleport> &ateleporting..."
+				send "&9Teleport> &ateleporting..." to {database.%uuid of player%.tpa}
+				delete {database.%uuid of player%.tpahere}
+				stop
+		else:
+			send "&9Teleport> &aNo one needs to tp to you"
+			
+command /tphere [<player>]:
+	permission: skript.admin
+	description: TP's a player to you forcefully
+	trigger:
+		if arg 1 is set:
+			set {_rank} to {database.%uuid of player%.serverRANK}
+			if {_rank} is "§aMod" or "§cAdmin":
+				if arg 1 is riding:
+					set {_Mount} to vehicle of arg 1
+					make the arg 1 dismount vehicle
+					wait 3 ticks
+					teleport arg 1 to location of player
+					teleport {_Mount} to location of player
+					make the player-argument ride {_Mount}
+				else:
+					teleport argument 1 to location of player
+			else:
+				send "&9Commands> &aYou do not have enough perms"
+				stop
+		else:
+			send "&9Commands> &aPlease specify a player to send tp to you"
+			
+command /tpall:
+	permission: skript.admin
+	description: TP's everyone to you
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			loop all players:
+				if loop-player is riding:
+					set {_Mount} to vehicle of loop-player
+					make the loop-player dismount vehicle
+					wait 3 ticks
+					teleport loop-player to location of player
+					teleport {_Mount} to location of player
+					make the loop-player ride {_Mount}
+				else:
+					teleport loop-player to location of player
+					send "&9Teleport> &ateleporting..."
+		else:
+			send "&9Teleport> &anot enough perms"
+			
+command /speed [<text="reset">]:
+	permission: skript.admin
+	description: Sets your fly/walk speed
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			send "&9Speed> &aRemeber you can do ""/speed"" to reset your speed to normal"
+			if player is flying:
+				if arg 1 is "reset":
+					set the player's walk speed to 0.2
+					set the player's fly speed to 0.1
+					send "&9Speed> &aYour speed was reset"
+				else:
+					set {_number} to arg 1 parsed as a number
+					set the player's fly speed to {_number}
+					set the player's walk speed to 0.2
+					send "&9Speed> &aYou set your fly speed to %{_number}%"
+					stop
+			if player is not flying:
+				if arg 1 is "reset":
+					set the player's walk speed to 0.2
+					set the player's fly speed to 0.1
+					send "&9Speed> &aYour speed was reset"
+				else:
+					set {_number} to arg 1 parsed as a number
+					set the player's walk speed to {_number}
+					set the player's fly speed to 0.1
+					send "&9Speed> &aYou set your walk speed to %{_number}%"
+		else:
+			send "&9Speed> &anot enough perms"
+			
+command /inventoryacess [<player>]:
+	permission: skript.admin
+	aliases: /invinsee, /inventorysee
+	description: See into a players inventory
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			if arg 1 is set:
+				open the inventory of argument 1 to player
+			if arg 1 is not a player:
+				send "&9AdminCommands> &aSpecify a player"
+			if arg 1 is not set:
+				send "&9AdminCommands> &aSpeciay a player"
+		else:
+			send "&9AdminCommand> &anot enough perms"
+			
+command /enderacess [<player>]:
+	permission: skript.admin
+	aliases: /endersee
+	description: See into a players enderchest
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			if arg 1 is set:
+				open the enderchest of argument 1 to player
+			if arg 1 is not a player:
+				send "&9AdminCommands> &aSpecify a player"
+			if arg 1 is not set:
+				send "&9AdminCommands> &aSpeciay a player"
+		else:
+			send "&9AdminCommand> &anot enough perms"
+			
+command /sethome [<text>]:
+	aliases: /sethomes
+	description: Sets one of your homes
+	trigger:
+		if arg 1 is set:
+			if {database.%uuid of player%.upgrades::morehomes} is true:
+				set {_homecount} to size of {database.%uuid of player%.homes::*}
+				if {_homecount} is greater than or equal to 3:
+					send "&9Homes> &aYou already have 3 homes, try to delete some with ""/listhomes"" and ""/delhome"""
+					stop
+				if {_homecount} is less than 3:
+					set {database.%uuid of player%.homes::%arg 1%} to location of player
+					send "&9Homes> &aYou created a home called &c%arg 1% &aat your location"
+					stop
+					
+			if {database.%uuid of player%.upgrades::morehomes} does not exist:
+				set {_homecount} to size of {database.%uuid of player%.homes::*}
+				if {_homecount} is greater than or equal to 5:
+					send "&9Homes> &aYou already have 5 homes, try to delete some with ""/listhomes"" and ""/delhome"""
+					stop
+				if {_homecount} is less than 5:
+					set {database.%uuid of player%.homes::%arg 1%} to location of player
+					send "&9Homes> &aYou created a home called &c%arg 1% &aat your location"
+					stop
+		if arg 1 is not set:
+			send "&9Homes> &aPlease specify a name of the home"
+			
+command /listhomes:
+	aliases: /listhome, /homelist, /showhomes, /homes
+	description: List all of your homes
+	trigger:
+		loop {database.%uuid of player%.homes::*}:
+			add 1 to {_homecount}
+			set {_home::%{_homecount}%} to "%loop-index%"
+		if {_homecount} does not exist:
+			send "&9Homes> &aYou have no homes"
+		if {_homecount} is 0:
+			send "&9Homes> &aYou have no homes"
+		if {_homecount} is 1:
+			send "&9Homes (%{_homecount}%)> &a%{_home::1}%"
+		if {_homecount} is 2:
+			send "&9Homes (%{_homecount}%)> &a%{_home::1}%&r, &a%{_home::2}%"
+		if {_homecount} is 3:
+			send "&9Homes (%{_homecount}%)> &a%{_home::1}%&r, &a%{_home::2}%&r, &a%{_home::3}%"
+		if {_homecount} is 4:
+			send "&9Homes (%{_homecount}%)> &a%{_home::1}%&r, &a%{_home::2}%&r, &a%{_home::3}%&r, &a%{_home::4}%"
+		if {_homecount} is 5:
+			send "&9Homes (%{_homecount}%)> &a%{_home::1}%&r, &a%{_home::2}%&r, &a%{_home::3}%&r, &a%{_home::4}%&r, &a%{_home::5}%"
+		
+command /delhome [<text>]:
+	aliases: /delhome, /deletehomes, /rmhomes
+	description: Deletes one of your homes
+	trigger:
+		if arg 1 is set:
+			if {database.%uuid of player%.homes::%arg 1%} exists:
+				delete {database.%uuid of player%.homes::%arg 1%}
+				send "&9Homes> &aYou removed your home named &c%arg 1%"
+				stop
+			if {database.%uuid of player%.homes::%arg 1%} does not exist:
+				set {_homecount} to size of {database.%uuid of player%.homes::*}
+				send "&9Homes (%{_homecount}%)> &a%{database.%uuid of player%.homes::*}%"
+				stop
+		if arg 1 is not set:
+			send "&9Homes> &aPlease specify a home name to remove"
+			
+command /home [<text>]:
+	aliases: /gohome, /iwanttogohome
+	description: Takes you home
+	trigger:
+		if arg 1 is set:
+			if {database.%uuid of player%.homes::%arg 1%} exists:
+				if player is riding:
+					set {_Mount} to vehicle of player
+					make the player dismount vehicle
+					wait 3 ticks
+					teleport player to {database.%uuid of player%.homes::%arg 1%}
+					teleport {_Mount} to {database.%uuid of player%.homes::%arg 1%}
+					make the player ride {_Mount}
+				else:
+					teleport player to {database.%uuid of player%.homes::%arg 1%}
+				stop
+			if {database.%uuid of player%.homes::%arg 1%} does not exist:
+				make player execute command "/homes"
+				stop
+		if arg 1 is not set:
+			send "&9Homes> &aPlease specify a home name to go to"
+			
+on rightclick on stone button:
+	cancel event
+	set {_block} to location of the block below clicked block
+	if block below clicked block is dark prismarine:
+		if block 2 below clicked block is water:
+			loop all boats in radius 10 around player:
+				add 1 to {_boatcount}
+			if {_boatcount} is greater than or equal to 1:
+				send "&9Server &aTheir is a boat nearby you do not need to use this command"
+			if {_boatcount} does not exist:
+				set {_north} to block north of {_block}
+				set {_south} to block south of {_block}
+				set {_east} to block east of {_block}
+				set {_west} to block west of {_block}
+				if {_north} is water:
+					send "&9Server> &aHave a safe trip"
+					set {_block} to block 2 above {_block}
+					set {_spawn} to block 3 north of {_block}
+					spawn a boat at {_spawn}
+					wait 1 second
+					play raw sound "game.player.swim.splash" at event-location with pitch 2 volume 2
+					
+				if {_south} is water:
+					send "&9Server> &aHave a safe trip"
+					set {_block} to block 2 above {_block}
+					set {_spawn} to block 3 south of {_block}
+					spawn a boat at {_spawn}
+					wait 1 second
+					play raw sound "game.player.swim.splash" at event-location with pitch 2 volume 2
+					
+				if {_east} is water:
+					send "&9Server> &aHave a safe trip"
+					set {_block} to block 2 above {_block}
+					set {_spawn} to block 3 east of {_block}
+					spawn a boat at {_spawn}
+					wait 1 second
+					play raw sound "game.player.swim.splash" at event-location with pitch 2 volume 2
+					
+				if {_west} is water:
+					send "&9Server> &aHave a safe trip"
+					set {_block} to block 2 above {_block}
+					set {_spawn} to block 3 west of {_block}
+					spawn a boat at {_spawn}
+					wait 1 second
+					play raw sound "game.player.swim.splash" at event-location with pitch 2 volume 2
+				
+command /ban [<player>] [<text>]:
+	description: Ban a player
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			if arg 1 is set:
+				if arg 2 is set:
+					set {database.%uuid of arg 1%.isBanned} to true
+					set {database.%uuid of arg 1%.banReason} to "%arg 2%"
+					set {database.%uuid of arg 1%.bannedBy} to player
+					set {database.bannedplayers::%arg 1%} to "%uuid of arg 1%"
+					send "&9AdminCommands> &aYou banned %arg 1%"
+					broadcast "&c%player% &abanned &c%arg 1%"
+					kick arg 1 due to "&aYou have been banned by %{database.%uuid of arg 1%.bannedBy}% for:%nl%%{database.%uuid of arg 1%.banReason}%"
+				if arg 2 is not set:
+					send "&9AdminCommands> &aCorrect Usage /ban [player] [reason]"
+			else:
+				send "&9AdminCommands> &aCorrect Usage /ban [player] [reason]"
+		else:
+			send "&9AdminCommands> &aNot enough perms you have"
+			
+command /unban [<text>]:
+	aliases: /pardon
+	description: Unban a player
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			if arg 1 is set:
+				if {database.bannedplayers::%arg 1%} exists:
+					set {_uuid} to {database.bannedplayers::%arg 1%}
+					set {database.%{_uuid}%.isBanned} to false
+					delete {database.%{_uuid}%.bannedBy}
+					delete {database.%{_uuid}%.banReason}
+					delete {database.%{_uuid}%.whenBanned}
+					delete {database.%{_uuid}%.banTime}
+					delete {database.bannedplayers::%arg 1%}
+					send "&9AdminCommands> &aYou unbanned %arg 1%"
+					broadcast "&c%player% &aunbanned &c%arg 1%"
+				else:
+					loop {database.bannedplayers::*}:
+						add loop-index to {_bannedplayers::*}
+					send "&9Banned Players> &a%{_bannedplayers::*}%"
+			if arg 1 is not set:
+				send "&9AdminCommands> &aCorrect Usage /unban [player]"
+		else:
+			send "&9AdminCommands> &aNot enough perms you have"
+			
+command /banlist:
+	description: View all banned people
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			loop {database.bannedplayers::*}:
+				add loop-index to {_bannedplayers::*}
+			send "&9Banned Players> &a%{_bannedplayers::*}%"
+		else:
+			send "&9AdminCommands> &aNot enough perms you have"
+			
+command /tempban <player> <text=The ban hammer has spoken> <timespan=1 day>:
+	description: Ban a player BUT ONLY FOR A WHILE
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			if arg 1 is set:
+				set {database.%uuid of arg 1%.banReason} to "%arg 2%"
+				set {database.%uuid of arg 1%.bannedBy} to player
+				set {database.%uuid of arg 1%.isBanned} to true
+				set {database.bannedplayers::%arg 1%} to "%uuid of arg 1%"
+				set {database.%uuid of arg 1%.whenBanned} to now
+				set {database.%uuid of arg 1%.banTime} to arg 3
+				broadcast "&c%player% &abanned &c%arg 1% &afor &c%arg 3%"
+				kick arg 1 due to "&aYou have been temp-banned by %{database.%uuid of arg 1%.bannedBy}% for %{database.%uuid of arg 1%.banTime}%:%nl%%{database.%uuid of arg 1%.banReason}%"
+			else:
+				send "&9AdminCommands> &aCorrect usage /tempban [player] [ban reason] [timespan]"
+				send "&bAcceptable [TIMESPAWN] Usage:"
+				send "&b- 1 hour"
+				send "&b- 2 days"
+				send "&b- 4 weeks"
+		else:
+			send "&9AdminCommands> &aNot enough perms you have"
+			
+on connect:
+	if {database.%uuid of player%.isBanned} is false:
+		if {database.%uuid of player%.bannedBy} exists:
+			clear {database.%uuid of player%.banTime}
+			clear {database.%uuid of player%.whenBanned}
+			set {database.%uuid of player%.isBanned} to false
+			delete {database.%uuid of player%.bannedBy}
+			delete {database.%uuid of player%.banReason}
+			delete {database.%uuid of player%.whenBanned}
+			delete {database.%uuid of player%.banTime}
+			delete {database.bannedplayers::%player%}
+	if {database.%uuid of player%.isBanned} is true:
+		if {database.%uuid of player%.banTime} exists:
+			set {_tempban} to  difference between now and {database.%uuid of player%.whenBanned}
+			reduce {_tempban} by  {database.%uuid of player%.banTime}
+			if difference between now and {database.%uuid of player%.whenBanned} is bigger than {database.%uuid of player%.banTime}:
+				clear {database.%uuid of player%.banTime}
+				clear {database.%uuid of player%.whenBanned}
+				set {database.%uuid of player%.isBanned} to false
+				delete {database.%uuid of player%.bannedBy}
+				delete {database.%uuid of player%.banReason}
+				delete {database.%uuid of player%.whenBanned}
+				delete {database.%uuid of player%.banTime}
+				delete {database.bannedplayers::%player%}
+			if difference between now and {database.%uuid of player%.whenBanned} is smaller than {database.%uuid of player%.banTime}:
+				kick player due to "&aYou have been temp-banned by %{database.%uuid of player%.bannedBy}% for %{_tempban}%:%nl%%{database.%uuid of player%.banReason}%"
+		else:
+			kick player due to "&aYou have been banned by %{database.%uuid of player%.bannedBy}% for:%nl%%{database.%uuid of player%.banReason}%"
+			
+command /serverinfo:
+	trigger:
+		set {_totalmem} to total memory
+		set {_maxmem} to max memory
+		set {_freemem} to free memory
+		set {_tps} to tps
+		loop all players:
+			if loop-player is in world "Earth_the_end":
+				add 1 to {_playersinend}
+			if loop-player is in world "Earth_nether":
+				add 1 to {_playersinnether}
+			if loop-player is in world "Earth":
+				add 1 to {_playersinworld}
+		send "&9-- &aServer Info &6--"
+		send "&bTotal Memory: &a%{_totalmem}%"
+		send "&bMax Memory: &a%{_maxmem}%"
+		send "&bFree Memory: &a%{_freemem}%"
+		send "&bTPS: &a%{_tps}%"
+		send "&bPlayers in Nether: &a%{_playersinnether}%"
+		send "&bPlayers in End: &a%{_playersinend}%"
+		send "&bPlayers in Overworld: &a%{_playersinworld}%"
+		
+on break of mob spawner:
+	tool of player is any pickaxe of silk touch
+	drop a spawner at player based on event-block
+	
+on place of mob spawner:
+	if name of former tool is "skeleton spawner" or "pig spawner" or "squid spawner" or "silverfish spawner" or "zombie spawner" or "bat spawner" or "witch spawner" or "chicken spawner" or "cow spawner" or "creeper spawner" or "enderman spawner":
+		set {_name} to name of former tool
+		set {_name::*} to {_name} split at " "
+		send "%{_name::1}%"
+		set {_l} to location of targeted block
+		set spawner {_l} to "%{_name::1}%"
+		
+command /spawner <text>:
+	description: Change a spawner type
+	permission: skript.reward.spawner
+	trigger:
+		if player is op:
+			if target block is a spawner:
+				if arg 1 is "skeleton" or "witch" or "zombie" or "pig" or "cow" or "sheep" or "chicken" or "slime" or "mooshroom" or "squid":
+					set {_l} to location of targeted block
+					set spawner {_l} to "%arg 1%"
+				else:
+					send "&9Spawner> &aThats not an acceptable mob"
+			else:
+				send "&9Server> &aYou need to be looking at a mob spawner"	
+		if {database.%uuid of player%.upgrades::spawnertype} is true:
+			if target block is a spawner:
+				if arg 1 is "skeleton" or "witch" or "zombie" or "pig" or "cow" or "sheep" or "chicken" or "slime" or "mooshroom" or "squid":
+					set {_l} to location of targeted block
+					set spawner {_l} to "%arg 1%"
+				else:
+					send "&9Spawner> &aThats not an acceptable mob"
+			else:
+				send "&9Server> &aYou need to be looking at a mob spawner"
+		if {database.%uuid of player%.upgrades::spawnertype} does not exist:
+			send "&9Server> &aYou need to purchase this is /upgrade"
+	
+command /sudo <player> <text>:
+	permission: skript.admin
+	description: Make another player execute a command
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§cAdmin":
+			run player-argument command "/%arg 2%" as op
+			send "&amade %arg 1% execute command %arg 2%"
+		else:
+			send "&9Server> &aNot Enough Perms"
+			
+					
+command /nick [<text>]:
+	aliases: /nickname
+	description: Change ur name
+	permission: skript.reward.nickname
+	trigger:
+		if player is op:
+			delete {database.%uuid of player%.nickname}
+			set {_nickname} to argument
+			replace all "&" with "§" in {_nickname}
+			set {_nick::*} to {_nickname} split at ""
+			set {_count} to size of {_nick::*}
+			set {database.%uuid of player%.nickname} to {_nickname}
+			send "&9Nickname> &aNice nickname ""%{_nickname}%&a"""
+			delete {_nickname}
+			stop
+		if {database.%uuid of player%.upgrades::nickname} is true:
+			delete {database.%uuid of player%.nickname}
+			set {_nickname} to argument
+			replace all "&" with "§" in {_nickname}
+			set {_nick::*} to {_nickname} split at ""
+			set {_count} to size of {_nick::*}
+			if {_count} is greater than or equal to 16:
+				send "&9Nickname> &aYou nickname can not be over 16 letters - you have &b%{_count}% letters"
+				stop
+			else:
+				set {database.%uuid of player%.nickname} to {_nickname}
+				send "&9Nickname> &aNice nickname ""%{_nickname}%&a"""
+				delete {_nickname}
+		if {database.%uuid of player%.upgrades::nickname} does not exist:
+			send "&9Server> &aYou need to purchase this is /upgrade"
+			
+			
+command /resetnick <player>:
+	description: Resets a players nickname
+	permission: skript.admin
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			delete {database.%uuid of arg 1%.nickname}
+			send "&9Server> &aYou reset the nickname of &b%arg 1%"
+			send "&9Server> &aYour nickname has been reset" to player-argument
+		else:
+			send "&9Nickname> &aNot Enough Perms"
+
+command /backupinventory:
+	description: backs up a players inventory
+	permission: sktipt.backupinventory
+	trigger:
+		loop all items in the player's inventory:
+			add loop-item to {database.%uuid of player%.inventory::*}
+			remove loop-item from player
+		send "&aInventory backed-up"
+			
+command /reloadinventory:
+	description: reloads a players inventory
+	permission: sktipt.reloadinventory
+	trigger:
+		loop {database.%uuid of player%.inventory::*}:
+			give loop-value to player
+		send "&aInventory restored"
+		delete {database.%uuid of player%.inventory::*}
+
+command /fixgm:
+	trigger:
+		set {_gm} to "%gamemode of player%"
+		if {_gm} is "adventure":
+			set the gamemode of the player to survival
+			send "&9Server> &aYou have been put back into survival"
+		else:
+			send "&9Server> &aYour gamemode is already survival, please let an admin know of this problem!"
+			
+command /unstick:
+	trigger:
+		set {_b} to block 2 above the player
+		teleport the player to {_b}
+		
+command /mute [<player>] [<timespan>]:
+	description: silences a player
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			if arg 1 is set:
+				if arg 2 is set:
+					set {database.%uuid of arg 1%.whenMuted} to now
+					set {database.%uuid of arg 1%.muteTime} to arg 2
+					set {database.%uuid of arg 1%.isMuted} to true
+					set {database.mutedplayers::%arg 1%} to "%uuid of arg 1%"
+					send "&9Server> &aYou muted &c%arg 1% &afor &c%arg 2%"
+					send "&9Server> &aYou have been muted by &c%player% &afor &c%arg 2%" to arg 1
+					broadcast "&c%player% &amuted &c%arg 1%&a for &c%arg 2%"
+					stop
+				if arg 2 is not set:
+					set {database.%uuid of arg 1%.isMuted} to true
+					set {database.mutedplayers::%arg 1%} to "%uuid of arg 1%"
+					broadcast "&c%player% &amuted &c%arg 1%"
+					send "&9Server> &aYou muted &c%arg 1%"
+					send "&9Server> &aYou have been muted by &c%player%&a - you can still /msg" to arg 1
+					stop
+			if arg 1 is not set:
+				send "&9Server> &aYou need to specify a player"
+		else:
+			send "&9Server> &aNot Enough Perms"
+			
+command /unmute [<text>]:
+	description: Un-zip their mouths!
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			if {database.mutedplayers::%arg 1%} exists:
+				set {_uuid} to {database.mutedplayers::%arg 1%}
+				delete {database.%{_uuid}%.whenMuted}
+				delete {database.%{_uuid}%.muteTime}
+				delete {database.%{_uuid}%.isMuted}
+				delete {database.mutedplayers::%{_uuid}%}
+				broadcast "&c%player% &aunmuted &c%arg 1%"
+				send "&9Server> &aYou unmuted %arg 1%"
+				stop
+			else:
+				loop {database.mutedplayers::*}:
+					add loop-index to {_bannedplayers::*}
+				send "&9Muted Players> &a%{_bannedplayers::*}%"
+		else:
+			send "&9Server> &aNot Enough Perms"
+			
+command /mutelist:
+	description: View the ppl who run their mouth to much
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			loop {database.mutedplayers::*}:
+				add loop-index to {_bannedplayers::*}
+			send "&9Muted Players> &a%{_bannedplayers::*}%"
+		else:
+			send "&9Server> &aNot Enough Perms"

@@ -1,0 +1,203 @@
+on join:
+	set {database.%uuid of player%.LastLogin} to "%month% %day%, %year% at %hour%:%minutes%"
+	
+	set {_ip} to "%ip of player%"
+	if {database.%uuid of player%.IP} is not {_ip}:
+		add {_ip} to {database.%uuid of player%.IP}
+		
+	set {database.%uuid of player%.TimeLoggedIn} to now
+		
+	if {database.%uuid of player%.NAME} does not exist:
+		set {database.%uuid of player%.NAME} to "%player%"
+	if {database.%uuid of player%.playTime} does not exist:
+		set {database.%uuid of player%.playTime} to 0
+	if {database.%uuid of player%.serverRANK} does not exist:
+		set {database.%uuid of player%.serverRANK} to "§bCitizen"
+		
+	if {database.%uuid of player%.IP} does not exist:
+		set {database.%uuid of player%.IP} to "%ip of player%"
+		
+	if {database.%uuid of player%.UUID} does not exist:
+		set {database.%uuid of player%.UUID} to "%uuid of player%"
+		
+	if {database.%uuid of player%.firstJoined} does not exist:
+		set {database.%uuid of player%.firstJoined} to "%month% %day%, %year% at %hour%:%minutes%"
+		send "&9Server> &aWelcome to StormW Nations"
+		
+	if {database.%uuid of player%.isBanned} does not exist:
+		set {database.%uuid of player%.isBanned} to false
+		
+	if {database.%uuid of player%.isOp} does not exist:
+		set {database.%uuid of player%.isOp} to false
+		
+	if {database.%uuid of player%.isAdmin} does not exist:
+		set {database.%uuid of player%.isAdmin} to false
+		
+	if {database.%uuid of player%.KILLS} does not exist:
+		set {database.%uuid of player%.KILLS} to 0
+		
+	if {database.%uuid of player%.DEATHS} does not exist:
+		set {database.%uuid of player%.DEATHS} to 0
+		
+	if {database.%uuid of player%.MONEY} does not exist:
+		set {database.%uuid of player%.MONEY} to 0
+		
+	if {database.%uuid of player%.hasJoined} does not exist:
+		set {database.%uuid of player%.hasJoined} to true
+
+	if player is op:
+		set {database.%uuid of player%.isOp} to true
+		
+	if player is not op:
+		set {database.%uuid of player%.isOp} to false
+
+command /playerinfo [<player>]:
+	permission: skript.admin
+	trigger:	
+		if arg 1 is set:
+			send "&6--Player: &b%arg 1% &6--"
+			send "&bName:&a %{database.%uuid of arg 1%.NAME}%"
+			send "&bNick Name:&a %{database.%uuid of arg 1%.nickname}%"
+			send "&bserverRank:&a %{database.%uuid of arg 1%.serverRANK}%"
+			send "&bGamemode: &a%gamemode of arg 1%"
+			send "&bPlay Time: &a%{database.%uuid of arg 1%.playTime}%"
+			send "&bIsMuted: &a%{database.%uuid of arg 1%.isMuted}%"
+			send "&bIP Address:&a %{database.%uuid of arg 1%.IP}%"
+			send "&bUUID:&a %{database.%uuid of arg 1%.UUID}%"
+			send "&bfirstJoined:&a %{database.%uuid of arg 1%.firstJoined}%"
+			send "&bisBanned:&a %{database.%uuid of arg 1%.isBanned}%"
+			if {database.%uuid of arg 1%.isBanned} is true:
+				send "&bBan Reason:&a %{database.%uuid of arg 1%.banReason}%"
+				send "&bBanned By:&a %{database.%uuid of arg 1%.bannedBy}%"
+			if {database.%uuid of player%.acceptedterms} is true:
+				send "&bhasAceptedTerms:&a true"
+			if {database.%uuid of player%.denyterms} is true:
+				send "&bhasAceptedTerms:&a false"
+			if {database.%uuid of arg 1%.isBanned} is true:
+				send "&9banReason:&a %{database.%uuid of arg 1%.banReason}%"
+			send "&bisOP:&a %{database.%uuid of arg 1%.isOp}%"
+			send "&bisAdmin:&a %{database.%uuid of arg 1%.isAdmin}%"
+			send "&bKills:&a %{database.%uuid of arg 1%.KILLS}%"
+			send "&bDeaths:&a %{database.%uuid of arg 1%.DEATHS}%"
+			send "&bBalance:&a %{database.%uuid of arg 1%.MONEY}%"
+			send "&bhasJoined:&a %{database.%uuid of arg 1%.hasJoined}%"
+			send "&bLastLogin:&a %{database.%uuid of arg 1%.LastLogin}%"
+		if arg 1 is not set:
+			send "&aPlease specify a player"
+			
+			
+			
+command /playerdatabase [<text>] [<player>] [<text>] [<text>]:
+	permission: skript.admin
+	trigger:
+		if player is op:
+			if arg 1 is not set:
+				send "&6-- &bDatabase commands&6 --"
+				send "&b/database reset <player> <stat> &a- resets the specified stat"
+				send "&b/database object <player> <objectname> <value> &a- set value of database variable"
+				send "&cIF YOU DO NOT KNOW WHAT YOU ARE DOING DO NOT CONTINUE! - ASK AARON FOR HELP!"
+				
+			if arg 1 is "object" or "obj":
+				if arg 2 is set:
+				
+					if arg 3 is set:
+					
+						if arg 4 is set:
+						
+							if arg 3 is "isLeader" or "isBanned" or "isOp" or "isAdmin" or "acceptedterms" or "denyterms":
+							
+								if arg 4 is "true":
+									set {database.%uuid of arg 2%.%arg 3%} to true
+									send "&bYou set %arg 3% of %arg 2% to true"
+									
+								if arg 4 is "false":
+									set {database.%uuid of arg 2%.%arg 3%} to false
+									send "&bYou set %arg 3% of %arg 2% to false"
+									
+							if arg 3 is "kills" or "deaths" or "money":
+								set {database.%uuid of arg 2%.%arg 3%} to arg 4
+								
+						if arg 4 is not set:
+							send "&bYou must specify the value of the permission"
+							
+					if arg 3 is not set:
+						send "&6--&bDatabase Objects&6--"
+						send "&bThese are the list of player objects you can change."
+						send "&a--------------------------"
+						send "&bisAdmin, isOp, isBanned, acceptedterms, denyterms &a- These must be true/false"
+						send "&a--------------------------"
+						send "&bkills, deaths, money &a- These must be a number"
+						send "&a--------------------------"
+						
+				if arg 2 is not set:
+					send "&bYou must specify a player!"
+			
+			if arg 1 is "reset":
+				if arg 2 is not set:
+					send "&6-- &bDatabase Reset Options&6 --"
+					send "&bAll&a - Resets all stats"
+					send "&bIP &a- Resets the IP address of a player"
+					send "&bkills &a- reset kill count"
+					send "&bdeaths &a- resets death count"
+					send "&bbalance &a- resets players money"
+					send "&bhoursplayed &a- resets the total hours played by that player"
+					send "&bacceptedterms &a- resets terms"
+					send "&bdenyterms &a- resets terms"
+					stop
+					
+				if arg 3 is not set:
+					send "&6-- &bDatabase Reset Options&6 --"
+					send "&bAll&a - Resets all stats"
+					send "&bIP &a- Resets the IP address of a player"
+					send "&bkills &a- reset kill count"
+					send "&bdeaths &a- resets death count"
+					send "&bbalance &a- resets players money"
+					send "&bhoursplayed &a- resets the total hours played by that player"
+					send "&bacceptedterms &a- resets terms"
+					send "&bdenyterms &a- resets terms"
+					stop
+					
+				if arg 3 is "all":
+					delete {database.%uuid of arg 2%.LastLogin}
+					delete {database.%uuid of arg 2%.NAME}
+					delete {database.%uuid of arg 2%.IP}
+					delete {database.%uuid of arg 2%.UUID}
+					delete {database.%uuid of arg 2%.isLeader}
+					delete {database.%uuid of arg 2%.firstJoined}
+					delete {database.%uuid of arg 2%.isBanned}
+					delete {database.%uuid of arg 2%.banCount}
+					delete {database.%uuid of arg 2%.HOURSPLAYED}
+					delete {database.%uuid of arg 2%.NATION}
+					delete {database.%uuid of arg 2%.belongsToANation}
+					delete {database.%uuid of arg 2%.canViewBank}
+					delete {database.%uuid of arg 2%.isOp}
+					delete {database.%uuid of arg 2%.KILLS}
+					delete {database.%uuid of arg 2%.DEATHS}
+					delete {database.%uuid of arg 2%.MONEY}
+					delete {database.%uuid of arg 2%.hasJoined}
+					delete {database.%uuid of arg 2%.nationIsAtWar}
+					delete {database.%uuid of arg 2%.LastLogin}
+					delete {database.%uuid of arg 2%.isAdmin}
+					delete {database.%uuid of arg 2%.nationTITLE}
+					delete {database.%uuid of arg 2%.nationRANK}
+					kick arg 2 due to "&aYou have been cleared from the database%nl%You may try to relog."
+					send "&cPLAYER CLEARED!!"
+					
+				if arg 3 is "LastLogin" or "NAME" or "IP" or "UUID" or "isLeader" or "firstJoined" or "isBanned" or "banCount" or "HOURSPLAYED" or "NATION" or "belongsToANation" or "canViewBank" or "isOp" or "KILLS" or "DEATHS" or "MONEY" or "hasJoined" or "nationIsAtWar" or "LastLogin" or "isAdmin" or "nationRANK" or "nationTITLE" or "acceptedterms" or "denyterms":
+					delete {database.%uuid of arg 2%.%arg 3%}
+					send "&aYou reset the %arg 3% of %arg 2%"
+					kick arg 2 due to "&aYour data in the database has been changed by an admin%nl%Please relog."
+
+command /makeleader <player>:
+	permission: skript.admin
+	trigger:
+		set {_rank} to {database.%uuid of player%.serverRANK}
+		if {_rank} is "§aMod" or "§cAdmin":
+			make console execute command "/pex user %arg 1% group set Leader"
+			set {database.%uuid of arg 1%.isLeader} to true
+			
+command /givemoney <player> <integer>:
+	permission: skript.admin.money
+	trigger:
+		add  arg 1 to {database.%uuid of arg 1%.MONEY}
+		send "&9Server> %{database.%uuid of arg 1%.MONEY}%"
